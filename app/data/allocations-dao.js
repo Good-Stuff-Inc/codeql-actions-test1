@@ -74,9 +74,16 @@ const AllocationsDAO = function(db){
                 }
                 throw `The user supplied threshold: ${parsedThreshold} was not valid.`;
                 */
-                return {
-                    $where: `this.userId == ${parsedUserId} && this.stocks > '${threshold}'`
-                };
+                const parsedThreshold = parseInt(threshold, 10);
+                
+                if (parsedThreshold >= 0 && parsedThreshold <= 99) {
+                    // Use native MongoDB query operators instead of $where to avoid JS injection
+                    return {
+                        userId: parsedUserId,
+                        stocks: { $gt: parsedThreshold }
+                    };
+                }
+                throw new Error(`The user supplied threshold: ${parsedThreshold} was not valid. Threshold must be between 0 and 99.`);
             }
             return {
                 userId: parsedUserId
